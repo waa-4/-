@@ -1,5 +1,12 @@
 import * as THREE from'three';import{OrbitControls}from'three/addons/controls/OrbitControls.js';import{TYPES,TOOLNAMES}from'./config.js';import{World}from'./world.js';
-const c=document.querySelector('#c'),r=new THREE.WebGLRenderer({canvas:c,antialias:true});r.setPixelRatio(Math.min(devicePixelRatio,2));const s=new THREE.Scene();s.background=new THREE.Color(0x10171f);const cam=new THREE.PerspectiveCamera(55,1,.1,200);cam.position.set(22,20,26);const oc=new OrbitControls(cam,c);oc.target.set(0,0,0);oc.enableDamping=true;s.add(new THREE.HemisphereLight(0xcde8ff,0x26311f,1.6));let dl=new THREE.DirectionalLight(0xffffff,2);dl.position.set(12,25,8);s.add(dl);const w=new World(s);
+const c=document.querySelector('#c');
+const beings=document.querySelector('#beings');
+const tools=document.querySelector('#tools');
+const disasters=document.querySelector('#disasters');
+const pauseBtn=document.querySelector('#pause');
+const speedSelect=document.querySelector('#speed');
+const resetBtn=document.querySelector('#reset');
+const r=new THREE.WebGLRenderer({canvas:c,antialias:true});r.setPixelRatio(Math.min(devicePixelRatio,2));const s=new THREE.Scene();s.background=new THREE.Color(0x10171f);const cam=new THREE.PerspectiveCamera(55,1,.1,200);cam.position.set(22,20,26);const oc=new OrbitControls(cam,c);oc.target.set(0,0,0);oc.enableDamping=true;s.add(new THREE.HemisphereLight(0xcde8ff,0x26311f,1.6));let dl=new THREE.DirectionalLight(0xffffff,2);dl.position.set(12,25,8);s.add(dl);const w=new World(s);
 let tool='spawn',spawnType=TYPES[0],sel=null,kind=null,paused=false,speed=1,ray=new THREE.Raycaster(),pt=new THREE.Vector2();const hint=document.querySelector('#hint'),insp=document.querySelector('#inspector');
 function btn(parent,text,fn){let b=document.createElement('button');b.textContent=text;b.onclick=fn;parent.appendChild(b);return b}
 TYPES.forEach(t=>btn(beings,t.name,()=>{spawnType=t;tool='spawn';hint.textContent='Spawn '+t.name+': click the ground.'}));
@@ -12,6 +19,8 @@ let drag=null;c.addEventListener('pointerdown',e=>{let hits=pick(e),res=hits.map
 c.addEventListener('pointermove',e=>{if(tool==='transform'&&drag&&sel){sel.rotationY=drag.r+(e.clientX-drag.x)*.01;sel.mesh.rotation.y=sel.rotationY}});addEventListener('pointerup',()=>drag=null);c.addEventListener('wheel',e=>{if(tool==='transform'&&sel){sel.scale=Math.max(.25,Math.min(3,(sel.scale||1)*(e.deltaY>0?.92:1.08)));sel.mesh.scale.setScalar(sel.scale)}},{passive:true});
 function show(){if(!sel){insp.textContent='Select a being.';return}if(kind==='object'){insp.innerHTML='<b>'+sel.kind+'</b><div class=stat><span>Object</span><b>no mind</b></div>';return}let m=sel.mind;insp.innerHTML='<input id=nm value="'+sel.name+'"><div id=stats></div><h4>Mind</h4>'+['curiosity','bravery','social','aggression','energyBias'].map(k=>'<label>'+k+'<input data-k='+k+' type=range min=0 max=1 step=.01 value='+m[k]+'></label>').join('')+'<h4>Memory</h4><div id=mem></div>';nm.oninput=e=>sel.name=e.target.value;insp.querySelectorAll('[data-k]').forEach(x=>x.oninput=()=>m[x.dataset.k]=+x.value)}
 function updateInspector(){if(!sel||kind!=='entity')return;let m=sel.mind,st=document.querySelector('#stats'),mem=document.querySelector('#mem');if(st)st.innerHTML=[['Goal',m.goal],['Energy',m.needs.energy],['Hunger',m.needs.hunger],['Fear',m.emotion.fear],['Joy',m.emotion.joy]].map(([k,v])=>'<div class=stat><span>'+k+'</span><b>'+(typeof v==='number'?v.toFixed(2):v)+'</b></div>').join('');if(mem)mem.innerHTML=m.memory.slice(0,8).map(x=>'<div class=memory><b>'+x.kind+'</b> '+x.note+'<br>('+x.x+', '+x.z+') '+x.age.toFixed(1)+'s ago</div>').join('')||'<small>No memories yet.</small>'}
-pause.onclick=()=>{paused=!paused;pause.textContent=paused?'Resume':'Pause'};speed.onchange=()=>speed=+speed.value;reset.onclick=()=>{w.reset();sel=null;show()};
+pauseBtn.onclick=()=>{paused=!paused;pauseBtn.textContent=paused?'Resume':'Pause'};
+speedSelect.onchange=()=>speed=+speedSelect.value;
+resetBtn.onclick=()=>{w.reset();sel=null;show()};
 w.add('food',new THREE.Vector3(4,.25,4));w.add('shelter',new THREE.Vector3(7,.75,-6));w.spawn(TYPES[0],new THREE.Vector3(0,.35,0));w.spawn(TYPES[2],new THREE.Vector3(-3,3,2));
 let last=performance.now();function frame(now){let b=c.getBoundingClientRect();r.setSize(b.width,b.height,false);cam.aspect=b.width/Math.max(1,b.height);cam.updateProjectionMatrix();let dt=Math.min(.05,(now-last)/1000);last=now;if(!paused)w.update(dt*speed);oc.update();updateInspector();r.render(s,cam);requestAnimationFrame(frame)}requestAnimationFrame(frame);
