@@ -1,0 +1,13 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bugbrain Sandbox</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header><div><b>Bugbrain Sandbox</b><span> tiny simulated beings in a tiny simulated world</span></div>
+<div><button id="pause">Pause</button><select id="speed"><option>.5</option><option selected>1</option><option>2</option><option>4</option></select><button id="reset">Reset</button></div></header>
+<main>
+<aside><h3>Beings</h3><div id="beings"></div><h3>Tools</h3><div id="tools"></div><h3>Disasters</h3><div id="disasters"></div></aside>
+<section id="view"><canvas id="c"></canvas><div id="hint">Choose a being, then click the ground.</div></section>
+<aside><h3>Inspector</h3><div id="inspector">Select a being.</div></aside>
+</main>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"}}</script>
+<script type="module" src="src/main.js"></script></body></html>
